@@ -1,0 +1,21 @@
+node_modules/
+frontend/dist/
+frontend/dist-preview/
+frontend/target/
+backend/target/
+deploy/.env
+*.iml
+.idea/
+frontend/tsconfig.tsbuildinfo
+
+# Generated TLS certificates and private keys (deploy/tls/make-certs.sh): never commit
+deploy/tls/out/
+
+# Backups contain the database, the files and the encryption keys (deploy/deploy.sh backup): never commit
+backups/
+
+# Production settings (deploy/deploy.sh --prod): never commit
+deploy/.env.prod
+
+# Local development database password when there is no deploy/.env (deploy/db.sh)
+deploy/.env.db

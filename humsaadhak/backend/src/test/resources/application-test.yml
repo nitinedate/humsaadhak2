@@ -1,0 +1,17 @@
+# Integration-test settings: no secrets, no external services.
+humsaadhak:
+  security:
+    field-key: AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=   # test-only key
+  search:
+    token: test-token
+  mail:
+    provider: log
+spring:
+  session:
+    jdbc:
+      initialize-schema: never
+server:
+  servlet:
+    session:
+      cookie:
+        secure: false

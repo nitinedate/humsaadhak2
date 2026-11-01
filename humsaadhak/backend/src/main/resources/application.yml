@@ -1,0 +1,107 @@
+# HumSaadhak 2.0 — every secret comes from the environment (fixes S4). Nothing sensitive belongs in this file.
+spring:
+  # Email over SMTP (MAIL_PROVIDER=smtp), e.g. Microsoft 365: smtp.office365.com, port 587. STARTTLS is required and the
+  # server's certificate and name are checked, unless SMTP_SSL_TRUST names the host (mail.smtp.ssl.trust, below in humsaadhak.mail).
+  mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    default-encoding: UTF-8
+    properties:
+      "[mail.smtp.auth]": true
+      "[mail.smtp.starttls.enable]": true
+      "[mail.smtp.starttls.required]": true
+      "[mail.smtp.ssl.checkserveridentity]": true
+      "[mail.smtp.connectiontimeout]": 10000
+      "[mail.smtp.timeout]": 10000
+      "[mail.smtp.writetimeout]": 10000
+      "[mail.store.protocol]": imaps
+  application:
+    name: humsaadhak
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/humsaadhak}
+    username: ${DB_USER:humsaadhak}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate          # Flyway owns the schema (fixes T1)
+    properties:
+      hibernate.jdbc.time_zone: UTC
+      org.hibernate.envers.store_data_at_delete: true
+  flyway:
+    locations: classpath:db/migration
+    # After the one-time legacy migration (V100) the database is "ahead" of V7, V8 …; without this, later releases
+    # would skip their new migrations. Applied V100 is classified as a future migration and ignored by validation.
+    out-of-order: true
+  session:
+    jdbc:
+      initialize-schema: never   # tables come from Flyway (V6)
+    timeout: 30m
+  modulith:
+    events:
+      jdbc:
+        schema-initialization:
+          enabled: true
+      republish-outstanding-events-on-restart: true
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 21MB
+
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: ${COOKIE_SECURE:true}
+        same-site: lax
+  forward-headers-strategy: framework
+
+management:
+  # No mail health check: it would sign in to the mail server on every health request, and a mail outage would mark
+  # the whole application unhealthy
+  health.mail.enabled: false
+  endpoints.web.exposure.include: health,info,prometheus
+  endpoint.health.probes.enabled: true
+
+springdoc:
+  api-docs.path: /v3/api-docs
+  swagger-ui.path: /swagger-ui
+
+humsaadhak:
+  app-url: ${APP_URL:http://localhost:8080}
+  security:
+    field-key: ${HUMSAADHAK_FIELD_KEY}          # base64 of 32 random bytes: openssl rand -base64 32
+    require-tls: ${REQUIRE_TLS:false}           # true in production: refuse to start if any connection is unencrypted
+  tls:
+    trust-ca: ${TLS_CA_FILE:}                   # internal CA (deploy/tls/make-certs.sh) for the search service and MinIO
+  bootstrap:
+    admin-email: ${HUMSAADHAK_BOOTSTRAP_ADMIN_EMAIL:}   # first super admin on an empty database (invitation emailed)
+  search:
+    url: ${SEARCH_URL:http://localhost:8000}
+    token: ${SEARCH_TOKEN}
+    timeout-ms: 2000
+  matching:
+    store-threshold: 40       # legacy accuracy-limit-max
+    show-threshold: 50        # legacy hard-coded review cut-off, now configurable (D3)
+    top-k: 25
+  storage:
+    bucket: ${STORAGE_BUCKET:humsaadhak-documents}
+    region: ${STORAGE_REGION:ap-south-1}
+    endpoint: ${STORAGE_ENDPOINT:}
+    public-endpoint: ${STORAGE_PUBLIC_ENDPOINT:}   # address browsers download documents from (https), if not the endpoint
+    create-bucket: ${STORAGE_CREATE_BUCKET:false}  # true for a self-hosted MinIO, which starts empty
+  mail:
+    provider: ${MAIL_PROVIDER:log}     # log | graph | smtp
+    from: ${MAIL_FROM:support@humsaadhak.com}
+    redirect-to: ${MAIL_REDIRECT_TO:}  # set outside production so real people never get test mail
+    smtp-ssl-trust: ${SMTP_SSL_TRUST:}  # e.g. smtp.office365.com: accept that SMTP host's certificate without verifying it
+    log-links: ${MAIL_LOG_LINKS:false}  # trials only: with provider log, also log the links in each email
+    graph:
+      tenant-id: ${GRAPH_TENANT_ID:}
+      client-id: ${GRAPH_CLIENT_ID:}
+      client-secret: ${GRAPH_CLIENT_SECRET:}
+  giving:
+    reminder-cron: "0 0 7 * * *"

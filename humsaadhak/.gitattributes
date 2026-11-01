@@ -1,0 +1,8 @@
+# Shell scripts must keep LF line endings, also when checked out on Windows: with CRLF, bash fails on the stray \r.
+*.sh       text eol=lf
+*.conf     text eol=lf
+Caddyfile  text eol=lf
+*.ps1      text
+
+# Windows batch files need CRLF line endings
+*.cmd      text eol=crlf

@@ -1,0 +1,15 @@
+# Only what the Dockerfile copies (frontend, backend) goes to the builder. Never settings, keys or backups, and never
+# local build output: a Windows frontend/node_modules copied over the Linux one breaks the frontend build.
+**/node_modules
+frontend/dist
+frontend/dist-preview
+frontend/tsconfig.tsbuildinfo
+backend/target
+deploy
+backups
+.git
+.github
+*.zip
+*.cmd
+**/.DS_Store
+**/*.log

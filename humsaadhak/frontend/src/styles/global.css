@@ -1,0 +1,408 @@
+/* Layout and components. Colours come only from theme tokens (themes.css). */
+:root {
+  --radius: 14px;
+  --rail-width: 252px;
+  --font-ui: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Plus Jakarta Sans', sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { min-height: 100%; }
+body { margin: 0; font-family: var(--font-ui); color: var(--text); background: var(--page); -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); }
+a:hover { color: var(--accent-ink); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+.num { font-variant-numeric: tabular-nums; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip-link { position: absolute; left: -999px; top: 8px; z-index: 50; padding: 10px 14px; border-radius: 8px; background: var(--accent); color: var(--on-accent); }
+.skip-link:focus { left: 8px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---------- App frame ----------
+   992px and wider (Bootstrap lg): the side panel is a fixed column and the page scrolls beside it.
+   Narrower: a top bar with a menu button; the side panel slides in as a Bootstrap off-canvas panel. */
+.app { display: flex; align-items: flex-start; min-height: 100vh; }
+.rail { background: var(--rail-bg) !important; color: var(--rail-text); }
+.rail .offcanvas-body { display: flex; flex-direction: column; gap: 18px; flex-grow: 1; }
+.rail-logo { background: #fff; border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
+.rail-logo img { display: block; width: 100%; max-width: 220px; height: auto; margin: 0 auto; }   /* the complete logo with its tagline */
+.rail-org { padding: 10px 12px; border-radius: 8px; background: var(--rail-2); color: var(--rail-text); font-size: 12px; display: flex; flex-direction: column; gap: 2px; }
+.rail-org strong { color: var(--rail-text-strong); font-size: 13px; }
+.rail nav { display: flex; flex-direction: column; gap: 2px; }
+.rail-section { margin: 10px 12px 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--rail-muted); }
+.rail-link { display: flex; align-items: center; gap: 12px; min-height: 42px; padding: 0 12px; border-radius: 8px; color: var(--rail-text); text-decoration: none; font-size: 14px; font-weight: 500; }
+.rail-link:hover { color: var(--rail-text-strong); background: var(--rail-2); }
+.rail-link.active { background: var(--rail-active); color: var(--rail-text-strong); font-weight: 600; box-shadow: var(--shadow); }
+.rail-link .count { margin-left: auto; padding: 0 8px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 800; }
+.rail-user { margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; background: var(--rail-2); color: var(--rail-text-strong); }
+.rail-user .who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.rail-user .who strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail-user .who span { color: var(--rail-muted); font-size: 12px; }
+.avatar { width: 36px; height: 36px; border-radius: 999px; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+.icon-btn { width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: var(--rail-text); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.icon-btn:hover { background: var(--rail-active); color: var(--rail-text-strong); }
+.main { flex: 1 1 auto; min-width: 0; padding: 32px; display: flex; flex-direction: column; gap: 22px; }
+/* Pages fill the space beside the side panel on any monitor; the Bootstrap grid inside each page decides the columns. */
+.page { width: 100%; max-width: none; display: flex; flex-direction: column; gap: 22px; }
+@media (min-width: 992px) {
+  .rail { position: sticky; top: 0; height: 100vh; overflow-y: auto; flex: 0 0 var(--rail-width); border-right: 1px solid var(--line); padding: 22px 14px;
+          display: flex; flex-direction: column; }
+}
+@media (max-width: 991.98px) {
+  html { scroll-padding-top: 76px; }                 /* focus and anchors land below the sticky top bar */
+  .main { scroll-margin-top: 76px; }
+  .app { flex-direction: column; align-items: stretch; }
+  .rail .offcanvas-body { padding-top: 0; }
+  .rail-user { margin-top: 0; }
+  .main { padding: 20px 16px 32px; }
+}
+/* Top bar: phones and tablets only */
+.topbar { position: sticky; top: 0; z-index: 1030; display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; padding: 10px 16px;
+          background: var(--surface); border-bottom: 1px solid var(--line); box-shadow: var(--shadow); }
+.topbar-logo { height: 30px; width: auto; }
+.topbar .avatar { margin-left: auto; }
+@media (max-width: 575.98px) { .main { padding: 16px 12px 28px; } .card { padding: 16px; } }
+@media (min-width: 1600px) { .main { padding: 36px 44px; } }
+
+/* ---------- Type ---------- */
+.eyebrow { font-size: 13px; font-weight: 600; color: var(--muted); }
+h1.title { margin: 0; font-family: var(--font-display); font-size: clamp(26px, 4.5vw, 34px); font-weight: 700; letter-spacing: -0.02em; }
+h2.card-title { margin: 0; font-size: 16px; font-weight: 700; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+
+/* ---------- Surfaces ---------- */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: var(--shadow); }
+.grid { display: grid; gap: 16px; }
+.grid.kpis { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; align-items: stretch; }
+.grid.charts { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.kpi { height: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow); }
+.kpi.dark { background: var(--hero-bg); border-color: var(--accent-line); color: var(--hero-text); }
+.kpi.dark .kpi-label, .kpi.dark .kpi-note { color: var(--hero-muted); }
+.kpi-label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.kpi-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.kpi-note { font-size: 12px; color: var(--text-2); }
+
+/* ---------- Controls ---------- */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label, .field .label { font-size: 14px; font-weight: 700; }
+.field .hint { font-size: 13px; color: var(--muted); }
+.field .error { font-size: 13px; color: var(--danger); font-weight: 600; }
+/* A wrapping strip of form fields (not Bootstrap's .row grid): each field at least 200px, wrapping on narrow screens. */
+.field-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.field-row > .field { flex: 1 1 200px; min-width: 0; }
+.segmented { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-btn { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; }
+.chip-btn[aria-selected='true'], .chip-btn[aria-pressed='true'], .chip-btn[aria-checked='true'] { background: var(--text); border-color: var(--text); color: var(--page); }
+
+/* ---------- Tables ---------- */
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+
+/* ---------- Pills, chips ---------- */
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.pill.submitted, .pill.info { background: var(--info-soft); color: var(--info); }
+.pill.approved, .pill.reviewed, .pill.success { background: var(--success-soft); color: var(--success); }
+.pill.rejected, .pill.danger { background: var(--danger-soft); color: var(--danger); }
+.pill.pending, .pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.draft, .pill.neutral { background: var(--line-soft); color: var(--text-2); }
+/* The upload form's compulsory documents: listed first and starred in the dropdown (bold and coloured where the browser
+   styles options), and a checklist of pills under it; a pill chooses its document */
+.form-select option.opt-compulsory { font-weight: 700; color: var(--accent-ink); background-color: var(--accent-soft); }
+/* Filter forms and pagers under lists (the documents list; the same layout as the audit log's) */
+.filter-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-items: end; }
+.filter-actions { display: flex; gap: 8px; }
+.pager { display: flex; align-items: center; gap: 8px; padding: 12px; }
+.pager > :first-child { margin-right: auto; }
+.compulsory-list { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.compulsory-list .hint { flex-basis: 100%; }
+.pill-button { border: 0; cursor: pointer; font-family: inherit; }
+.pill-button:hover { filter: brightness(0.96); }
+.pill-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.why { display: flex; flex-wrap: wrap; gap: 6px; }
+.why span { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-ink); }
+
+/* ---------- Feedback ---------- */
+.skeleton { background: linear-gradient(90deg, var(--skeleton-a), var(--skeleton-b), var(--skeleton-a)); background-size: 200% 100%; animation: shimmer 1.2s infinite; border-radius: 14px; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.empty { padding: 32px; text-align: center; color: var(--muted); }
+
+/* ---------- Dashboard grid: equal columns, no card left alone (rules in shared/ui/chartLayout.ts) ---------- */
+.dash-grid { display: grid; gap: 18px; align-items: stretch; }
+.dash-grid.cols-1 { grid-template-columns: minmax(0, 1fr); }
+.dash-grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.dash-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.dash-grid > .span-full { grid-column: 1 / -1; }
+/* Medium screens: three donuts become two per row, and an odd last card takes the whole row. */
+@media (max-width: 1280px) {
+  .dash-grid.cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash-grid.cols-3 > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+/* Small screens: one column. */
+@media (max-width: 820px) {
+  .dash-grid.cols-2, .dash-grid.cols-3 { grid-template-columns: minmax(0, 1fr); }
+  .dash-grid > * { grid-column: auto !important; }
+}
+.chart-card { gap: 10px; }
+.chart-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.chart-body { width: 100%; min-width: 0; }
+
+/* ---------- Donut: legend beside the donut when the card is wide, below it when narrow ---------- */
+.donut-card { container-type: inline-size; }
+.donut { display: flex; flex-direction: column; align-items: center; gap: 14px; flex: 1; justify-content: center; }
+.donut .legend { width: 100%; }
+@container (min-width: 470px) {
+  .donut { flex-direction: row; align-items: center; gap: 24px; }
+  .donut .legend { width: auto; flex: 1 1 0; }
+}
+.donut-chart { position: relative; width: 176px; height: 176px; flex-shrink: 0; }
+.donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
+.donut-center strong { font-family: var(--font-display); font-size: 24px; font-variant-numeric: tabular-nums; }
+.donut-center span { font-size: 11px; color: var(--muted); max-width: 96px; line-height: 1.3; }
+.legend { display: flex; flex-direction: column; gap: 2px; }
+.legend button { display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 4px 10px; border: 0; border-radius: 8px; background: transparent; font-size: 13px; line-height: 1.3; color: var(--text); text-align: left; cursor: pointer; }
+.legend button[aria-pressed='true'] { background: var(--surface-2); }
+.swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.legend .lbl { flex: 1; min-width: 0; }
+.legend .val { font-weight: 700; font-variant-numeric: tabular-nums; padding-left: 8px; }
+
+/* ---------- Split views and lists ---------- */
+.split { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.split > .list { flex: 1 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.split > .side { flex: 1 1 360px; min-width: 0; position: sticky; top: 24px; }
+.row-btn { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; }
+.row-btn[aria-current='true'] { background: var(--accent-soft); border-color: var(--accent-line); }
+.row-btn .grow { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.row-btn .sub { font-size: 13px; color: var(--muted); }
+.icon-badge { flex-shrink: 0; width: 40px; height: 40px; border-radius: 10px; background: var(--line-soft); color: var(--text-2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+.timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.timeline li { display: flex; gap: 12px; }
+.timeline .dot { flex-shrink: 0; width: 10px; height: 10px; margin-top: 6px; border-radius: 999px; background: var(--accent); }
+.timeline .what { font-size: 13px; color: var(--text-2); }
+.timeline.audit .what { overflow-wrap: anywhere; }
+.timeline li.refused .dot { background: var(--danger); }
+/* ---------- Audit trail panel at the bottom of a page ---------- */
+.activity { margin-top: 24px; }
+.activity > summary { cursor: pointer; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.activity > summary::marker, .activity > summary::-webkit-details-marker { color: var(--text-2); }
+
+/* ---------- Match Studio ---------- */
+.candidate { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.candidate.is-approved { border-color: var(--success); }
+.candidate.is-rejected { border-color: var(--danger-soft); background: var(--surface-2); }
+.rank { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 44px; }
+.rank strong { font-family: var(--font-display); font-size: 22px; }
+.rank button { width: 44px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; }
+.rank button:disabled { opacity: 0.35; cursor: default; }
+.score-row { display: flex; align-items: center; gap: 12px; }
+.match-label { font-size: 12px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
+.score-row strong { font-family: var(--font-display); font-size: 26px; min-width: 40px; }
+.score-track { flex: 1; position: relative; height: 10px; border-radius: 999px; background: var(--line); }
+.score-fill { height: 10px; border-radius: 999px; background: var(--accent); }
+.score-cut { position: absolute; left: 50%; top: -3px; width: 2px; height: 16px; background: var(--muted); }
+.purpose-banner { background: var(--hero-bg); color: var(--hero-text); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.purpose-banner p { margin: 0; color: var(--hero-muted); line-height: 1.55; font-size: 14px; }
+.hero-chip { align-self: flex-start; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--hero-chip); color: var(--hero-chip-text); }
+
+/* ---------- Settings: theme cards ---------- */
+.theme-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.theme-card { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; text-align: left; }
+.theme-card[aria-checked='true'] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.theme-preview { display: flex; height: 92px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+.theme-preview .p-rail { width: 30%; display: flex; flex-direction: column; gap: 6px; padding: 8px; }
+.theme-preview .p-rail i { display: block; height: 6px; border-radius: 3px; opacity: 0.75; }
+.theme-preview .p-main { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+.theme-preview .p-main i { display: block; height: 8px; border-radius: 4px; }
+
+/* ---------- Sign-in, sign-up ---------- */
+/* The sign-in pages: a still mesh of soft colour pools, made from the theme's own accent (cool) with warm peach and
+   gold from the logo. Blended in OKLab, so midtones stay clean instead of turning grey, and each pool fades out in
+   steps, so it has no edge. A very fine grain on top stops banding (visible steps in large, pale gradients). The brand
+   panel and the page card are frosted glass made from the theme's surface colour, so every theme, Night too, works. */
+.login { position: relative; isolation: isolate; display: flex; flex-wrap: wrap; min-height: 100vh; background: var(--page); }
+.login-aurora { position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(58% 68% at 6% 10%, color-mix(in oklab, var(--accent) 26%, transparent) 0%, color-mix(in oklab, color-mix(in oklab, var(--accent) 26%, transparent) 62%, transparent) 28%, color-mix(in oklab, color-mix(in oklab, var(--accent) 26%, transparent) 26%, transparent) 50%, transparent 74%),
+    radial-gradient(48% 58% at 94% 14%, rgba(255, 172, 122, 0.30) 0%, color-mix(in oklab, rgba(255, 172, 122, 0.30) 62%, transparent) 28%, color-mix(in oklab, rgba(255, 172, 122, 0.30) 26%, transparent) 50%, transparent 74%),
+    radial-gradient(56% 62% at 82% 96%, rgba(242, 198, 104, 0.26) 0%, color-mix(in oklab, rgba(242, 198, 104, 0.26) 62%, transparent) 28%, color-mix(in oklab, rgba(242, 198, 104, 0.26) 26%, transparent) 50%, transparent 74%),
+    radial-gradient(52% 56% at 24% 100%, color-mix(in oklab, var(--accent) 16%, transparent) 0%, color-mix(in oklab, color-mix(in oklab, var(--accent) 16%, transparent) 62%, transparent) 28%, color-mix(in oklab, color-mix(in oklab, var(--accent) 16%, transparent) 26%, transparent) 50%, transparent 74%),
+    linear-gradient(160deg, var(--page) 0%, color-mix(in oklab, var(--page) 94%, #ffdcc0) 100%);
+  background:
+    radial-gradient(58% 68% at 6% 10% in oklab, color-mix(in oklab, var(--accent) 26%, transparent) 0%, color-mix(in oklab, color-mix(in oklab, var(--accent) 26%, transparent) 62%, transparent) 28%, color-mix(in oklab, color-mix(in oklab, var(--accent) 26%, transparent) 26%, transparent) 50%, transparent 74%),
+    radial-gradient(48% 58% at 94% 14% in oklab, rgba(255, 172, 122, 0.30) 0%, color-mix(in oklab, rgba(255, 172, 122, 0.30) 62%, transparent) 28%, color-mix(in oklab, rgba(255, 172, 122, 0.30) 26%, transparent) 50%, transparent 74%),
+    radial-gradient(56% 62% at 82% 96% in oklab, rgba(242, 198, 104, 0.26) 0%, color-mix(in oklab, rgba(242, 198, 104, 0.26) 62%, transparent) 28%, color-mix(in oklab, rgba(242, 198, 104, 0.26) 26%, transparent) 50%, transparent 74%),
+    radial-gradient(52% 56% at 24% 100% in oklab, color-mix(in oklab, var(--accent) 16%, transparent) 0%, color-mix(in oklab, color-mix(in oklab, var(--accent) 16%, transparent) 62%, transparent) 28%, color-mix(in oklab, color-mix(in oklab, var(--accent) 16%, transparent) 26%, transparent) 50%, transparent 74%),
+    linear-gradient(160deg in oklab, var(--page) 0%, color-mix(in oklab, var(--page) 94%, #ffdcc0) 100%); }
+.login::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"); }
+.login-brand { flex: 1 1 clamp(420px, 31vw, 600px); background: color-mix(in srgb, var(--surface) 52%, transparent);
+               -webkit-backdrop-filter: blur(16px) saturate(1.15); backdrop-filter: blur(16px) saturate(1.15);
+               border-right: 1px solid color-mix(in srgb, var(--surface) 70%, transparent); box-shadow: 8px 0 40px rgba(30, 35, 64, 0.06);
+               color: var(--rail-text-strong); padding: 48px 44px; display: flex; flex-direction: column; gap: 28px; }
+.login-brand .plate { align-self: center; background: #fff; border-radius: 16px; padding: 16px 20px; max-width: 340px; }
+.login-brand .plate img { display: block; width: 100%; height: auto; }
+/* Centred under the logo, with some air between them; the pictures sit in the space below */
+.login-brand-text { margin-top: 22px; display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center; }
+.login-brand h1 { margin: 0; font-family: var(--font-display); font-size: 44px; line-height: 1.05; letter-spacing: -0.02em; }
+.login-brand p { margin: 0; color: color-mix(in oklab, var(--rail-text) 60%, var(--rail-text-strong)); font-size: 17px; line-height: 1.55; max-width: 460px; }
+/* Typed text: the full text keeps its place (invisible) so nothing moves while the copy on top is typed */
+.typed { display: inline-grid; }
+.typed > .typed-ghost, .typed > .typed-live { grid-area: 1 / 1; }
+.typed-ghost { visibility: hidden; }
+.typed-caret { display: inline-block; width: 0.08em; height: 0.95em; margin-left: 0.04em; vertical-align: -0.1em; background: currentColor; animation: typed-blink 0.8s steps(1) infinite; }
+@keyframes typed-blink { 50% { opacity: 0; } }
+
+/* Pictures on the sign-in page: each comes from far away, catches a white shine, whitens and bursts apart */
+/* Below the text in the brand panel, centred in the space left there; smaller on short screens */
+.login-pictures { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 12px; width: clamp(160px, 25vh, 240px); }
+.lp-stage { position: relative; width: 100%; aspect-ratio: 1; perspective: 900px; }
+.lp-picture { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; background: #fff;
+              box-shadow: 0 0 0 6px #fff, 0 0 32px 6px rgba(255, 255, 255, 0.7), 0 18px 40px rgba(30, 35, 64, 0.22); }
+.lp-picture img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.lp-sheen, .lp-shade { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; opacity: 0; }
+.lp-sheen { background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.85) 50%, transparent 62%); background-size: 260% 100%; }
+.lp-shade { background: radial-gradient(circle, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.9) 100%); }
+.lp-picture.arrive { animation: lp-arrive 1.4s cubic-bezier(0.16, 0.84, 0.3, 1) both; }
+.lp-picture.hold .lp-sheen { animation: lp-sheen 1.3s ease-in-out 0.1s both; }
+.lp-picture.hold .lp-shade { animation: lp-shade 2.6s ease-in both; }
+.lp-picture.hold { animation: lp-glow 2.6s ease-in both; }
+@keyframes lp-arrive {
+  from { transform: translate3d(90px, -70px, -1800px); opacity: 0; filter: blur(10px) brightness(1.7); }
+  55% { opacity: 1; }
+  to { transform: none; opacity: 1; filter: none; }
+}
+@keyframes lp-sheen { from { opacity: 1; background-position: 140% 0; } to { opacity: 1; background-position: -40% 0; } }
+@keyframes lp-shade { 0%, 50% { opacity: 0; } 100% { opacity: 0.85; } }
+@keyframes lp-glow {
+  0%, 60% { box-shadow: 0 0 0 6px #fff, 0 0 32px 6px rgba(255, 255, 255, 0.7), 0 18px 40px rgba(30, 35, 64, 0.22); }
+  100% { box-shadow: 0 0 0 10px #fff, 0 0 70px 26px rgba(255, 255, 255, 0.95), 0 18px 40px rgba(30, 35, 64, 0.12); }
+}
+.lp-burst { position: absolute; inset: 0; }
+.lp-piece { position: absolute; background-repeat: no-repeat;
+            -webkit-mask-image: radial-gradient(circle closest-side, #000 99%, transparent 100%); mask-image: radial-gradient(circle closest-side, #000 99%, transparent 100%);
+            -webkit-mask-size: 600% 600%; mask-size: 600% 600%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+            animation: lp-burst 0.9s cubic-bezier(0.2, 0.6, 0.3, 1) both; }
+@keyframes lp-burst {
+  from { transform: none; opacity: 1; filter: brightness(1.15); }
+  to { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.35); opacity: 0; filter: brightness(1.6); }
+}
+.lp-caption { text-align: center; font-weight: 700; font-size: 15px; letter-spacing: 0.02em; color: var(--rail-text-strong); animation: lp-caption 0.6s ease-out 0.5s both; }
+@keyframes lp-caption { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+/* After the last picture: all of them at their own proportions in one frame that shines like a diamond */
+@property --lp-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+.lp-finale { width: min(100%, clamp(260px, 46vh, 460px)); }
+.lp-diamond { position: relative; width: 100%; padding: 11px; border-radius: 18px;
+              /* facets (fine diagonal cuts) over a turning prism of ice blue, pink, mint and gold */
+              background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.55) 0 5px, transparent 5px 10px),
+                          repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.35) 0 5px, transparent 5px 10px),
+                          conic-gradient(from var(--lp-angle), #ffffff, #a9d6ff, #ffffff, #ffc4ee, #ffffff, #a9f5dc, #ffffff, #ffe79a, #ffffff, #c9b8ff, #ffffff);
+              box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 30px 8px rgba(255, 255, 255, 0.95), 0 0 70px 16px rgba(160, 195, 255, 0.45), 0 18px 40px rgba(30, 35, 64, 0.16);
+              animation: lp-finale-in 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) both, lp-diamond-turn 4s linear infinite; }
+@keyframes lp-diamond-turn { to { --lp-angle: 360deg; } }
+@keyframes lp-finale-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: none; } }
+.lp-mosaic { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 6px; border-radius: 11px; background: #fff; overflow: hidden; }
+.lp-mosaic::after { content: ""; position: absolute; inset: 0; pointer-events: none;      /* a glare sweeping across, like light on a gem */
+                    background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.85) 50%, transparent 62%); background-size: 300% 100%;
+                    animation: lp-glare 3.8s ease-in-out 1s infinite; }
+@keyframes lp-glare { 0% { background-position: 150% 0; } 35%, 100% { background-position: -50% 0; } }
+.lp-row { display: flex; gap: 6px; }
+/* Each picture's width follows its proportions (flex-grow = width / height), so every row has one height */
+.lp-tile { flex: var(--r) 1 0; aspect-ratio: var(--r); min-width: 0; border-radius: 7px; overflow: hidden; animation: lp-tile-in 0.6s ease-out both; }
+.lp-tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
+@keyframes lp-tile-in { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: none; } }
+.lp-glint { position: absolute; width: 28px; height: 28px; background: #fff; pointer-events: none; z-index: 1;
+            clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%);
+            filter: drop-shadow(0 0 5px #fff) drop-shadow(0 0 10px #a9d6ff); animation: lp-twinkle 1.9s ease-in-out infinite; }
+.lp-glint.g1 { top: -12px; left: -12px; }
+.lp-glint.g2 { top: -12px; right: 22%; animation-delay: 0.32s; }
+.lp-glint.g3 { top: 38%; right: -13px; animation-delay: 0.64s; width: 20px; height: 20px; }
+.lp-glint.g4 { bottom: -12px; right: -12px; animation-delay: 0.95s; }
+.lp-glint.g5 { bottom: -12px; left: 30%; animation-delay: 1.27s; }
+.lp-glint.g6 { top: 46%; left: -11px; animation-delay: 1.58s; width: 20px; height: 20px; }
+@keyframes lp-twinkle { 0%, 100% { opacity: 0; transform: scale(0.2) rotate(0deg); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
+
+/* The page card: it flips like a card between the sign-in pages (and away into the app on signing in) */
+.auth-flip { width: 100%; max-width: 500px; }
+.auth-card { background: color-mix(in srgb, var(--surface) 88%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+             border: 1px solid color-mix(in srgb, var(--surface) 94%, transparent); border-radius: 20px; padding: 32px 36px;
+             box-shadow: 0 24px 60px rgba(30, 35, 64, 0.14), 0 2px 6px rgba(30, 35, 64, 0.05); backface-visibility: hidden; transform-origin: center; }
+.auth-card.flip-out { animation: auth-flip-out 0.28s cubic-bezier(0.6, 0, 0.8, 0.4) both; pointer-events: none; }
+.auth-card.flip-in { animation: auth-flip-in 0.34s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+@keyframes auth-flip-out { from { transform: perspective(1400px) rotateY(0); } to { transform: perspective(1400px) rotateY(90deg); opacity: 0.5; } }
+@keyframes auth-flip-in { from { transform: perspective(1400px) rotateY(-90deg); opacity: 0.5; } to { transform: perspective(1400px) rotateY(0); opacity: 1; } }
+.main.page-flip-in { animation: page-flip-in 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) both; transform-origin: center top; }
+@keyframes page-flip-in { from { transform: perspective(1800px) rotateY(-60deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (max-width: 575.98px) { .auth-card { padding: 22px 18px; border-radius: 16px; } .login-form { padding: 24px 16px; } }
+
+/* Phones: the sign-in form comes first; the pictures would push it below the fold */
+@media (max-width: 575.98px) { .login-pictures { display: none; } }
+
+.login-form { flex: 999 1 480px; padding: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; }
+.login-form form, .login-form .panel { width: 100%; display: flex; flex-direction: column; gap: 16px; }
+.steps { display: flex; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.steps li { flex: 1; height: 6px; border-radius: 999px; background: var(--line); }
+.steps li[data-done='true'] { background: var(--accent); }
+
+/* ---------- Drawer (history, forms) ---------- */
+.drawer-backdrop { position: fixed; inset: 0; background: rgba(30, 35, 64, 0.28); z-index: 1055; display: flex; justify-content: flex-end; }
+.drawer { width: min(520px, 100%); height: 100%; overflow-y: auto; background: var(--surface); color: var(--text); padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.drawer, .dialog { text-align: start; }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+/* ---------- File picker ---------- */
+.dropzone {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 12px;
+  border: 2px dashed var(--line); background: var(--surface-2); cursor: pointer; transition: border-color 0.15s, background 0.15s;
+}
+.dropzone:hover { border-color: var(--accent-line); }
+.dropzone.over { border-color: var(--accent); background: var(--accent-soft); }
+.dropzone.invalid { border-color: var(--danger); }
+.dropzone-icon { flex-shrink: 0; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--accent-soft); color: var(--accent); }
+.dropzone-text { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.file-chosen { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--accent-line); background: var(--accent-soft); }
+.file-kind { flex-shrink: 0; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; letter-spacing: 0.02em; }
+.file-kind.danger { background: var(--danger-soft); color: var(--danger); }
+.file-kind.info { background: var(--info-soft); color: var(--info); }
+.file-kind.warn { background: var(--warn-soft); color: var(--warn); }
+.file-kind.success { background: var(--success-soft); color: var(--success); }
+.file-kind.neutral { background: var(--line-soft); color: var(--text-2); }
+.file-meta { flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.file-meta strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upload-grid { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(280px, 2fr); gap: 16px; align-items: start; }
+@media (max-width: 720px) { .upload-grid { grid-template-columns: 1fr; } }
+
+/* Demo builds only: a visible way to try another role. */
+.rail-demo { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.rail-switch { min-height: 30px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--rail-muted); background: transparent; color: var(--rail-text-strong); font-size: 12px; font-weight: 700; cursor: pointer; }
+.rail-switch:hover { background: var(--rail-active); }
+
+/* ---------- Centred dialog (chart details) ---------- */
+.dialog-backdrop { position: fixed; inset: 0; z-index: 1060; background: rgba(30, 35, 64, 0.32); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.dialog { width: min(1080px, 100%); max-height: calc(100vh - 48px); display: flex; flex-direction: column; background: var(--surface); color: var(--text); border-radius: 16px; box-shadow: 0 24px 64px rgba(30, 35, 64, 0.18); outline: none; }
+.dialog-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 24px; border-bottom: 1px solid var(--line); }
+.dialog-body { padding: 20px 24px 24px; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
+.expander { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.child-row > td { background: var(--surface-2); }
+.child-table { display: flex; flex-direction: column; gap: 8px; padding: 6px 0 6px 36px; }
+.child-table .table { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+/* Charts: clickable segments, and keyboard buttons that appear when focused */
+.clickable { cursor: pointer; }
+.drill-keys { display: flex; flex-wrap: wrap; gap: 6px; }
+.drill-keys button { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.drill-keys button:focus { position: static; width: auto; height: auto; clip: auto; }
+
+/* ---------- Small screens: sign-in, dialogs, drawers, Match Studio ---------- */
+@media (max-width: 767.98px) {
+  .login-brand, .login-form { padding: 28px 20px; }
+  .login-brand h1 { font-size: 32px; }
+  .dialog-backdrop { padding: 8px; }
+  .dialog-head { padding: 16px; }
+  .dialog-body { padding: 16px; }
+  .drawer { padding: 18px 16px; }
+  .split > .side { position: static; }
+  .child-table { padding-left: 8px; }
+  .page-head > * { min-width: 0; }
+}
+

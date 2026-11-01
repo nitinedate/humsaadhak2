@@ -1,0 +1,97 @@
+/* Bootstrap 5.3 dressed in HumSaadhak's themes: every Bootstrap colour comes from the theme tokens in themes.css,
+   so the four themes (and Bootstrap's dark mode for Night) keep working. Loaded after bootstrap.min.css. */
+:root, [data-bs-theme] {
+  --bs-body-font-family: var(--font-ui);
+  --bs-body-bg: var(--page);
+  --bs-body-color: var(--text);
+  --bs-emphasis-color: var(--text);
+  --bs-secondary-color: var(--muted);
+  --bs-tertiary-bg: var(--surface-2);
+  --bs-border-color: var(--line);
+  --bs-border-radius: 10px;
+  --bs-heading-color: inherit;
+  --bs-link-color: var(--accent);
+  --bs-link-hover-color: var(--accent-ink);
+  --bs-focus-ring-color: var(--focus);
+  --bs-form-valid-color: var(--success);
+  --bs-form-invalid-color: var(--danger);
+  --bs-form-invalid-border-color: var(--danger);
+}
+p { margin-bottom: 0; }
+
+/* ---------- Buttons: 44 px touch targets ---------- */
+.btn {
+  --bs-btn-padding-x: 18px; --bs-btn-font-size: 15px; --bs-btn-font-weight: 700; --bs-btn-border-radius: 10px;
+  --bs-btn-focus-box-shadow: 0 0 0 3px var(--focus);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; white-space: nowrap;
+}
+.btn-sm { --bs-btn-padding-x: 12px; --bs-btn-font-size: 13px; min-height: 36px; }
+.btn:disabled, .btn.disabled { opacity: 0.45; }
+.btn-primary {
+  --bs-btn-color: var(--on-accent); --bs-btn-bg: var(--accent); --bs-btn-border-color: var(--accent);
+  --bs-btn-hover-color: var(--on-accent); --bs-btn-hover-bg: var(--accent-ink); --bs-btn-hover-border-color: var(--accent-ink);
+  --bs-btn-active-color: var(--on-accent); --bs-btn-active-bg: var(--accent-ink); --bs-btn-active-border-color: var(--accent-ink);
+  --bs-btn-disabled-color: var(--on-accent); --bs-btn-disabled-bg: var(--accent); --bs-btn-disabled-border-color: var(--accent);
+}
+.btn-outline-secondary {
+  --bs-btn-color: var(--text); --bs-btn-bg: var(--surface); --bs-btn-border-color: var(--line);
+  --bs-btn-hover-color: var(--text); --bs-btn-hover-bg: var(--surface-2); --bs-btn-hover-border-color: var(--line);
+  --bs-btn-active-color: var(--text); --bs-btn-active-bg: var(--surface-2); --bs-btn-active-border-color: var(--accent-line);
+  --bs-btn-disabled-color: var(--text); --bs-btn-disabled-bg: var(--surface); --bs-btn-disabled-border-color: var(--line);
+}
+.btn-dark {
+  --bs-btn-color: var(--hero-text); --bs-btn-bg: var(--hero-bg); --bs-btn-border-color: var(--hero-bg);
+  --bs-btn-hover-color: var(--hero-text); --bs-btn-hover-bg: var(--hero-bg); --bs-btn-hover-border-color: var(--accent-line);
+  --bs-btn-active-color: var(--hero-text); --bs-btn-active-bg: var(--hero-bg);
+}
+.btn-outline-success {
+  --bs-btn-color: var(--success); --bs-btn-bg: var(--surface); --bs-btn-border-color: var(--success);
+  --bs-btn-hover-color: var(--surface); --bs-btn-hover-bg: var(--success); --bs-btn-hover-border-color: var(--success);
+  --bs-btn-active-color: var(--surface); --bs-btn-active-bg: var(--success); --bs-btn-active-border-color: var(--success);
+}
+.btn-outline-danger {
+  --bs-btn-color: var(--danger); --bs-btn-bg: var(--surface); --bs-btn-border-color: var(--danger);
+  --bs-btn-hover-color: var(--surface); --bs-btn-hover-bg: var(--danger); --bs-btn-hover-border-color: var(--danger);
+  --bs-btn-active-color: var(--surface); --bs-btn-active-bg: var(--danger); --bs-btn-active-border-color: var(--danger);
+}
+/* Match Studio: a chosen decision stays filled */
+.btn.approve[aria-pressed='true'] { background: var(--success); color: var(--surface); }
+.btn.reject[aria-pressed='true'] { background: var(--danger); color: var(--surface); }
+
+/* ---------- Forms ---------- */
+.form-control, .form-select {
+  min-height: 44px; border-radius: 10px; border-color: var(--line); background-color: var(--surface); color: var(--text); font-size: 15px;
+}
+.form-control::placeholder { color: var(--muted); }
+.form-control:focus, .form-select:focus { border-color: var(--accent); background-color: var(--surface); color: var(--text); box-shadow: 0 0 0 3px var(--accent-soft); }
+textarea.form-control { resize: vertical; line-height: 1.5; }
+.form-check-input { border-color: var(--line); }
+.form-check-input:checked { background-color: var(--accent); border-color: var(--accent); }
+.form-label { font-weight: 700; font-size: 14px; }
+
+/* ---------- Tables (inside .table-responsive: wide tables scroll sideways on small screens) ---------- */
+.table {
+  --bs-table-bg: var(--surface); --bs-table-color: var(--text); --bs-table-border-color: var(--line-soft);
+  --bs-table-hover-bg: var(--surface-2); --bs-table-hover-color: var(--text);
+  --bs-table-striped-bg: var(--surface-2); --bs-table-active-bg: var(--accent-soft); font-size: 14px;
+}
+.table > :not(caption) > * > * { padding: 12px 14px; }
+.table > thead th { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; border-bottom-color: var(--line); }
+.table > tbody > tr:last-child > * { border-bottom-width: 0; }
+.table tr[aria-selected='true'] > td { --bs-table-bg-state: var(--accent-soft); }
+
+/* ---------- Alerts (aliases keep the screens' "error / success / info" tones) ---------- */
+.alert { --bs-alert-padding-x: 14px; --bs-alert-padding-y: 12px; --bs-alert-margin-bottom: 0; --bs-alert-border-color: transparent;
+         --bs-alert-border-radius: 10px; font-size: 14px; font-weight: 600; }
+.alert-danger, .alert.error { --bs-alert-color: var(--danger); --bs-alert-bg: var(--danger-soft); }
+.alert-success, .alert.success { --bs-alert-color: var(--success); --bs-alert-bg: var(--success-soft); }
+.alert-warning, .alert.info { --bs-alert-color: var(--warn); --bs-alert-bg: var(--warn-soft); }
+
+/* ---------- Progress ---------- */
+.progress { --bs-progress-height: 6px; --bs-progress-bg: var(--line-soft); --bs-progress-bar-bg: var(--accent); --bs-progress-border-radius: 999px; min-width: 80px; }
+
+/* ---------- Off-canvas side panel (phones and tablets) ---------- */
+.offcanvas-lg { --bs-offcanvas-width: 288px; --bs-offcanvas-bg: var(--rail-bg); --bs-offcanvas-color: var(--rail-text); --bs-offcanvas-padding-x: 14px; }
+.offcanvas-backdrop { --bs-backdrop-bg: #1e2340; --bs-backdrop-opacity: 0.4; }
+.navbar-toggler { border-color: var(--line); padding: 8px 10px; min-height: 44px; }
+.navbar-toggler:focus { box-shadow: 0 0 0 3px var(--focus); }

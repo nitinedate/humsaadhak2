@@ -1,0 +1,15 @@
+# Profile 'tls' (SPRING_PROFILES_ACTIVE=tls): the application serves HTTPS itself, so traffic from the reverse proxy
+# to the application is encrypted too. Certificates come from deploy/tls/make-certs.sh (or your own CA).
+server:
+  port: ${SERVER_PORT:8443}
+  ssl:
+    bundle: server
+    enabled-protocols: TLSv1.3,TLSv1.2
+spring:
+  ssl:
+    bundle:
+      pem:
+        server:
+          keystore:
+            certificate: file:${TLS_CERT_FILE}
+            private-key: file:${TLS_KEY_FILE}

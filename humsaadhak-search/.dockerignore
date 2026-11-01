@@ -1,0 +1,9 @@
+# Only what the Dockerfile copies (pyproject.toml, app, training) goes to the builder
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.venv
+venv
+tests
+.git
+*.zip

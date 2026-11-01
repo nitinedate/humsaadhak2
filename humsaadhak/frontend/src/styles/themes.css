@@ -1,0 +1,56 @@
+/*
+ * Four themes, chosen in Settings and saved on the account. Components only use these tokens, never raw colours,
+ * so a theme is just a different set of values.
+ *
+ * All themes use light, low-glare combinations: tinted light side panels, light highlight cards and soft chart colours.
+ * Text and buttons still meet WCAG AA contrast (checked by themes.test.ts). Night keeps a dark background for low light,
+ * but as a soft slate with pastel accents rather than near-black.
+ */
+:root, [data-theme='INDIGO'] {
+  --page: #f6f7fc; --surface: #ffffff; --surface-2: #f9fafe; --line: #e6e8f2; --line-soft: #f0f2f8;
+  --text: #1e2340; --text-2: #474e6b; --muted: #636a88;
+  --accent: #5151cc; --accent-soft: #eeeefc; --accent-ink: #3d3db0; --on-accent: #ffffff; --accent-line: #c9c9f4;
+  --rail-bg: #eef0fa; --rail-2: #e4e7f6; --rail-active: #ffffff; --rail-text: #3e4566; --rail-text-strong: #1e2340; --rail-muted: #646b8c;
+  --hero-bg: #e8e9fb; --hero-text: #1e2340; --hero-muted: #4a5170; --hero-chip: #ffe2b8; --hero-chip-text: #5a3a00;
+  --success: #1d7a45; --success-soft: #e6f5ec; --danger: #b42b2b; --danger-soft: #fdeeee;
+  --warn: #8a5a00; --warn-soft: #fff4dc; --info: #2a55b8; --info-soft: #e9f0ff;
+  --skeleton-a: #eef0f7; --skeleton-b: #f7f8fc; --focus: #5151cc;
+  --shadow: 0 1px 2px rgba(30, 35, 64, 0.04), 0 4px 16px rgba(30, 35, 64, 0.04);
+  color-scheme: light;
+}
+[data-theme='HUMSAADHAK'] {
+  --page: #faf7f3; --surface: #ffffff; --surface-2: #fbf8f4; --line: #ede4da; --line-soft: #f5efe8;
+  --text: #2e241d; --text-2: #5a4c42; --muted: #75665b;
+  --accent: #ad5a27; --accent-soft: #fbede3; --accent-ink: #8e4213; --on-accent: #ffffff; --accent-line: #ebc3a6;
+  --rail-bg: #f6ede4; --rail-2: #efe2d5; --rail-active: #ffffff; --rail-text: #5a4c42; --rail-text-strong: #2e241d; --rail-muted: #6c5c51;
+  --hero-bg: #fbe8da; --hero-text: #3a2414; --hero-muted: #6a4e3c; --hero-chip: #ecd9b4; --hero-chip-text: #3a2208;
+  --success: #2f7a35; --success-soft: #e9f4ea; --danger: #ad2c24; --danger-soft: #fcedeb;
+  --warn: #7f6129; --warn-soft: #faf2e3; --info: #1f6f6b; --info-soft: #e5f2f0;
+  --skeleton-a: #f1ebe4; --skeleton-b: #f9f5f1; --focus: #ad5a27;
+  --shadow: 0 1px 2px rgba(46, 36, 29, 0.04), 0 4px 16px rgba(46, 36, 29, 0.04);
+  color-scheme: light;
+}
+[data-theme='OCEAN'] {
+  --page: #f3f8f8; --surface: #ffffff; --surface-2: #f7fbfb; --line: #ddebeb; --line-soft: #ebf4f4;
+  --text: #15303a; --text-2: #3e5a63; --muted: #587178;
+  --accent: #1b7a72; --accent-soft: #e3f3f1; --accent-ink: #145f59; --on-accent: #ffffff; --accent-line: #a9dcd5;
+  --rail-bg: #e6f3f2; --rail-2: #d9eceb; --rail-active: #ffffff; --rail-text: #3e5a63; --rail-text-strong: #15303a; --rail-muted: #50676d;
+  --hero-bg: #dcf1ee; --hero-text: #12302c; --hero-muted: #42615b; --hero-chip: #ffe3b3; --hero-chip-text: #5a3a00;
+  --success: #1d7a45; --success-soft: #e5f5ec; --danger: #b42b2b; --danger-soft: #fdeeee;
+  --warn: #85540a; --warn-soft: #fff4dc; --info: #1f639a; --info-soft: #e5f2fb;
+  --skeleton-a: #e8f1f1; --skeleton-b: #f4f9f9; --focus: #1b7a72;
+  --shadow: 0 1px 2px rgba(21, 48, 58, 0.04), 0 4px 16px rgba(21, 48, 58, 0.04);
+  color-scheme: light;
+}
+[data-theme='NIGHT'] {
+  --page: #1c2131; --surface: #242b3e; --surface-2: #2a3247; --line: #353e57; --line-soft: #2d354b;
+  --text: #e9ecf5; --text-2: #c6ccdc; --muted: #a2aac2;
+  --accent: #aab4ff; --accent-soft: #303859; --accent-ink: #ccd3ff; --on-accent: #1c2131; --accent-line: #5d6898;
+  --rail-bg: #212739; --rail-2: #2a3146; --rail-active: #343d58; --rail-text: #c6ccdc; --rail-text-strong: #ffffff; --rail-muted: #9ca4bd;
+  --hero-bg: #2f3858; --hero-text: #f2f4fb; --hero-muted: #c6ccdc; --hero-chip: #f4d48f; --hero-chip-text: #2a2310;
+  --success: #8fdcb2; --success-soft: #24392f; --danger: #f5a3a3; --danger-soft: #402a31; 
+  --warn: #f2d38e; --warn-soft: #3a3423; --info: #a9c8ff; --info-soft: #273452;
+  --skeleton-a: #2a3247; --skeleton-b: #323b54; --focus: #aab4ff;
+  --shadow: none;
+  color-scheme: dark;
+}

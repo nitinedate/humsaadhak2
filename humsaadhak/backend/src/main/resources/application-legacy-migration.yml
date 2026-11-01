@@ -1,0 +1,7 @@
+# Profile for the one-time move from the old system. See README, "Migrating from the old system".
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/legacy
+humsaadhak:
+  legacy:
+    upload-dir: ${LEGACY_UPLOAD_DIR:/data/legacy-uploads}
