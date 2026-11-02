@@ -5,6 +5,7 @@ import { api, ApiError } from '../../shared/api/client';
 import type { ShareRow } from '../../shared/api/types';
 import { ErrorNote, Skeleton } from '../../shared/ui/States';
 import { ActivityPanel, AuditTrailButton } from '../../shared/ui/AuditTrail';
+import { SharedDocuments } from './SharedDocuments';
 
 const LABEL = { REQUESTED: ['Waiting for your answer', 'pending'], APPROVED: ['Shared', 'approved'], REJECTED: ['Declined', 'rejected'] } as const;
 
@@ -17,6 +18,7 @@ export default function ShareRequestsPage() {
   const [declining, setDeclining] = useState<number | null>(null);
   const [reason, setReason] = useState('');
   const [notice, setNotice] = useState<string | null>(null);
+  const [openShare, setOpenShare] = useState<number | null>(null);   // the request whose documents are open (donors)
 
   const decide = useMutation({
     mutationFn: ({ id, ok }: { id: number; ok: boolean }) =>
@@ -48,6 +50,14 @@ export default function ShareRequestsPage() {
           </div>
           <span className={`pill ${LABEL[r.status][1]}`}>{LABEL[r.status][0]}</span>
           <AuditTrailButton type="SHARE_REQUEST" id={r.id} name={`documents for “${r.needName}”`} />
+          {!owner && r.status === 'APPROVED' && (
+            <button type="button" className="btn btn-outline-success btn-sm" aria-expanded={openShare === r.id}
+                    onClick={() => setOpenShare(openShare === r.id ? null : r.id)}>
+              {openShare === r.id ? 'Hide documents' : 'View shared documents'}</button>
+          )}
+          {!owner && r.status === 'APPROVED' && openShare === r.id && (
+            <div style={{ flex: '1 1 100%' }}><SharedDocuments requestId={r.id} ownerName={r.ownerName} /></div>
+          )}
           {owner && r.status === 'REQUESTED' && (declining === r.id ? (
             <div className="field-row" style={{ flex: '1 1 100%' }}>
               <div className="field"><label htmlFor={`dr-${r.id}`}>Reason (sent to the donor)</label>

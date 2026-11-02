@@ -1,5 +1,6 @@
 package org.humsaadhak.documents.controller;
 
+import org.humsaadhak.documents.dto.SharedDocumentRow;
 import org.humsaadhak.shared.dto.PageResponse;
 import org.humsaadhak.documents.dto.DocumentListRow;
 import org.humsaadhak.shared.model.AuditTarget;
@@ -74,6 +75,11 @@ public class DocumentController {
     @PostMapping("/share-requests")
     @ResponseStatus(HttpStatus.CREATED)
     public Created requestShare(@RequestParam long needId) { return new Created(documents.requestShare(needId, CurrentUser.get())); }
+
+    /** What the organisation shares with the donor through this (approved) request; each download is audited on its own. */
+    @AuditAction(value = "share.view", target = AuditTarget.SHARE_REQUEST, id = "#id", transactional = false)
+    @GetMapping("/share-requests/{id}/documents")
+    public List<SharedDocumentRow> sharedDocuments(@PathVariable long id) { return queries.sharedDocuments(id, CurrentUser.get()); }
 
     @GetMapping("/share-requests")
     public List<ShareRow> myShareRequests() { return queries.shareRequestsOf(CurrentUser.get()); }

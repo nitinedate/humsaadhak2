@@ -24,7 +24,7 @@ public final class AuditActions {
             Map.entry("document.upload", "Uploaded a document"), Map.entry("document.download", "Opened a download link"),
             Map.entry("document.review", "Accepted the document"), Map.entry("document.reject", "Rejected the document"),
             Map.entry("share.request", "Asked to see documents"), Map.entry("share.approve", "Agreed to share documents"),
-            Map.entry("share.reject", "Declined to share documents"),
+            Map.entry("share.reject", "Declined to share documents"), Map.entry("share.view", "Viewed the documents shared with them"),
             Map.entry("match.run", "Ran the matching engine"), Map.entry("match.confirm", "Confirmed matches"),
             Map.entry("donation.record", "Recorded a donation"),
             Map.entry("import.upload", "Imported a workbook"), Map.entry("import.template", "Downloaded an import template"),

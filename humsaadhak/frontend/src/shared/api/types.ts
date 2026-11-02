@@ -46,10 +46,14 @@ export interface PurposeView {
   id: number; refNo: string; donorOrgId: number; name: string; description: string; sector: string;
   commitmentAmount: number | null; periodicity: Periodicity; approved: boolean;
 }
+/** A document a school or NGO shares with a donor (GET /share-requests/{id}/documents): current and approved. */
+export interface SharedDocumentRow { id: number; typeName: string; name: string; version: number; approvedAt: string | null }
+
 export interface CandidateRow {
   id: number; needId: number; needName: string; kind: 'CAUSE' | 'PROJECT'; sector: string; remaining: number;
   score: number; engineRank: number; explanation: string; decision: 'PENDING' | 'APPROVED' | 'REJECTED';
   remark: string | null; priority: number | null;
+  decidedBy?: string | null; decidedAt?: string | null;   // set once approved or rejected
 }
 export interface CandidateDecision { candidateId: number; approve: boolean; remark: string | null; priority: number | null }
 export interface DonationResult { donationId: number; refNo: string; paid: number; commitmentLeft: number | null; nextDue: string | null }

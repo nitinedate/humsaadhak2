@@ -96,7 +96,9 @@ public class DocumentService implements DocumentStates {
         DocumentType type = types.findById(d.getDocumentTypeId()).orElseThrow();
         boolean approvedShare = me.orgId() != null && shares.existsByOwnerOrgIdAndDonorOrgIdAndStatus(
                 d.getOwnerOrgId(), me.orgId(), ShareRequest.Status.APPROVED);
-        if (!DocumentAccessPolicy.canView(me.role().isStaff(), me.orgId(), d.getOwnerOrgId(), type.isShareable(), approvedShare))
+        boolean currentAndApproved = !d.isSuperseded() && d.getState() == Document.State.REVIEWED;
+        if (!DocumentAccessPolicy.canView(me.role().isStaff(), me.orgId(), d.getOwnerOrgId(), type.isShareable(), approvedShare,
+                currentAndApproved))
             throw new AccessDeniedException("document " + id);
         return storage.signedDownloadUrl(d.getStorageKey(), d.getOriginalName(), LINK_TTL);
     }

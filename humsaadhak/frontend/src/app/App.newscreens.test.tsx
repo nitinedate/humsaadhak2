@@ -734,3 +734,39 @@ describe('public pages', () => {
     expect(await screen.findByRole('heading', { name: 'Password set' }, T)).toBeTruthy();
   }, 20000);
 });
+
+describe('after an NGO shares its documents', () => {
+  it('the donor opens them from My giving: approved, current documents only', async () => {
+    // runs after "NGO screens", where Pragati Trust agrees to share its documents with Asha Foundation CSR
+    await renderApp();
+    await signInAs('Corporate donor');
+    go('My giving');
+    const row = (await screen.findByText('Digital literacy lab for adolescent girls', undefined, T)).closest('tr')!;
+    fireEvent.click(within(row).getByRole('button', { name: 'View shared documents' }));
+    const list = await screen.findByRole('list', { name: 'Documents shared by Pragati Trust' }, T);
+    expect(within(list).getByText('Registration certificate')).toBeTruthy();              // approved by HumSaadhak
+    expect(within(list).getByRole('button', { name: 'Download Registration certificate' })).toBeTruthy();
+    expect(within(list).queryByText('80G certificate')).toBeNull();                        // rejected, or its new version unchecked
+    expect(within(list).queryByText('12A certificate')).toBeNull();                        // still being checked
+    fireEvent.click(within(row).getByRole('button', { name: 'Hide documents' }));
+    expect(screen.queryByRole('list', { name: 'Documents shared by Pragati Trust' })).toBeNull();
+  }, 20000);
+});
+
+describe('Match Studio history', () => {
+  it('shows approved candidates in priority order and rejected ones with the reason, apart from those to review', async () => {
+    await renderApp();
+    await signInAs('Manager');
+    go('Match Studio');
+    const approved = await screen.findByRole('region', { name: 'Approved candidates' }, T);
+    const rejected = screen.getByRole('region', { name: 'Rejected candidates' });
+    const coding = (await within(approved).findByText('Coding club for girls, Satara', undefined, T)).closest('tr')!;
+    expect(coding.querySelector('td')!.textContent).toBe('1');                                // priority
+    const water = within(rejected).getByText('Drinking water station').closest('tr')!;
+    expect(within(water).getByText('Outside this donor’s focus on digital learning.')).toBeTruthy();
+    expect(within(water).getByText('manager@demo.humsaadhak.org')).toBeTruthy();
+    // decided ones are not offered for review again
+    expect(screen.queryByRole('group', { name: 'Decision for Coding club for girls, Satara' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Decision for Drinking water station' })).toBeNull();
+  }, 20000);
+});

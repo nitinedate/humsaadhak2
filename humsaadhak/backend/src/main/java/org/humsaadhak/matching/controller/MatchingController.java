@@ -36,6 +36,11 @@ public class MatchingController {
     @PreAuthorize("hasAuthority('perm:match.decide')")
     public List<CandidateRow> candidates(@PathVariable long id) { return matching.candidateRows(id); }
 
+    /** Approved candidates (priority order), then rejected ones with their reasons: Match Studio's history. */
+    @GetMapping("/purposes/{id}/candidates/decided")
+    @PreAuthorize("hasAuthority('perm:match.decide')")
+    public List<CandidateRow> decidedCandidates(@PathVariable long id) { return matching.decidedRows(id); }
+
     @AuditAction(value = "match.confirm", target = AuditTarget.PURPOSE, id = "#id", detail = "#body.decisions().?[approve()].size() + ' approved, ' + #body.decisions().?[!approve()].size() + ' rejected'")
     @PostMapping("/purposes/{id}/candidates/decisions")
     @ResponseStatus(HttpStatus.CREATED)

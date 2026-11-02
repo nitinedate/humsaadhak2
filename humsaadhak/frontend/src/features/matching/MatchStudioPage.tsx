@@ -6,7 +6,7 @@ import type { CandidateRow, PurposeView } from '../../shared/api/types';
 import { bestSentence, inr, matchLabel, PERIODICITY_LABEL, whyChips } from '../../shared/format';
 import { ErrorNote, Skeleton } from '../../shared/ui/States';
 import { buildDecisions, type Choice } from './decisions';
-import { ActivityPanel, AuditTrailButton } from '../../shared/ui/AuditTrail';
+import { ActivityPanel, AuditTrailButton, when } from '../../shared/ui/AuditTrail';
 
 export default function MatchStudioPage() {
   const { can } = useAuth();
@@ -20,20 +20,24 @@ export default function MatchStudioPage() {
     queryKey: ['candidates', purpose?.id], enabled: !!purpose,
     queryFn: () => api<CandidateRow[]>(`/purposes/${purpose!.id}/candidates`),
   });
+  const decided = useQuery({
+    queryKey: ['candidates', purpose?.id, 'decided'], enabled: !!purpose,
+    queryFn: () => api<CandidateRow[]>(`/purposes/${purpose!.id}/candidates/decided`),
+  });
   const [order, setOrder] = useState<number[]>([]);
   const [choices, setChoices] = useState<Record<number, Choice>>({});
   const [remarks, setRemarks] = useState<Record<number, string>>({});
   const [done, setDone] = useState<string | null>(null);
 
+  // Only candidates still waiting for review: one approved or rejected earlier cannot be decided again (the server
+  // sends only waiting ones; this keeps a decided one off the screen in any case)
+  const waiting = useMemo(() => (candidates.data ?? []).filter((c) => c.decision === 'PENDING'), [candidates.data]);
   useEffect(() => {
-    setOrder((candidates.data ?? []).map((c) => c.id));
+    setOrder(waiting.map((c) => c.id));
     setChoices({}); setRemarks({}); setDone(null);
-  }, [candidates.data]);
+  }, [waiting]);
 
-  const byId = useMemo(() => new Map((candidates.data ?? []).map((c) => [c.id, c])), [candidates.data]);
-  // A purpose switch briefly leaves the previous order in local state while the next query loads.
-  // Do not render or submit that old order against the newly selected purpose.
-  const hasCandidateSnapshot = candidates.data !== undefined;
+  const byId = useMemo(() => new Map(waiting.map((c) => [c.id, c])), [waiting]);
   const { decisions, problem } = buildDecisions(order, choices, remarks);
   const approvedCount = decisions.filter((d) => d.approve && choices[d.candidateId]).length;
   const rejectedCount = Object.values(choices).filter((c) => c === 'R').length;
@@ -52,10 +56,6 @@ export default function MatchStudioPage() {
     mutationFn: () => api<{ id: number }>(`/purposes/${purpose!.id}/candidates/decisions`, { method: 'POST', json: { decisions } }),
     onSuccess: () => {
       setDone(`Batch confirmed · ${approvedCount} matches sent to the donor in this order`);
-      qc.invalidateQueries({ queryKey: ['candidates', purpose?.id] });
-    },
-    onError: () => {
-      // Another reviewer may have changed these candidates since this list was loaded.
       qc.invalidateQueries({ queryKey: ['candidates', purpose?.id] });
     },
   });
@@ -103,10 +103,10 @@ export default function MatchStudioPage() {
             {(confirm.error || run.error) && <div className="alert alert-danger" role="alert">
               {((confirm.error ?? run.error) as ApiError).message}</div>}
             {candidates.isLoading && <Skeleton height={160} />}
-            {hasCandidateSnapshot && order.length === 0 && !done &&
+            {!candidates.isLoading && order.length === 0 && !done &&
               <div className="card empty">No candidates waiting. Run the engine to look for causes and projects that fit this purpose.</div>}
 
-            {hasCandidateSnapshot && order.map((id, i) => {
+            {order.map((id, i) => {
               const c = byId.get(id);
               if (!c) return null;
               const choice = choices[id];
@@ -154,7 +154,7 @@ export default function MatchStudioPage() {
               );
             })}
 
-            {hasCandidateSnapshot && order.length > 0 && (
+            {order.length > 0 && (
               <div className="card" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
                 <div style={{ flex: '1 1 280px' }}>
                   <strong><span style={{ color: 'var(--leaf)' }}>{approvedCount} approved</span> · <span style={{ color: 'var(--rose)' }}>{rejectedCount} rejected</span> · {order.length - approvedCount - rejectedCount} undecided</strong>
@@ -165,6 +165,10 @@ export default function MatchStudioPage() {
                 </button>
               </div>
             )}
+            <Decided title="Approved" note="Confirmed matches, in the order the donor sees them"
+                     rows={(decided.data ?? []).filter((c) => c.decision === 'APPROVED')} />
+            <Decided title="Rejected" note="With the reason given; every rejection teaches the engine"
+                     rows={(decided.data ?? []).filter((c) => c.decision === 'REJECTED')} />
           </section>
         )}
       </div>
@@ -172,3 +176,32 @@ export default function MatchStudioPage() {
     </div>
   );
 }
+
+/** Candidates already decided for the purpose: approved ones (with their priority) or rejected ones (with the reason). */
+function Decided({ title, note, rows }: { title: 'Approved' | 'Rejected'; note: string; rows: CandidateRow[] }) {
+  const approved = title === 'Approved';
+  return (
+    <section className="card" aria-label={`${title} candidates`}>
+      <div><h2 className="h6 mb-0">{title} <span className="muted">({rows.length})</span></h2><div className="small muted">{note}</div></div>
+      {rows.length === 0 ? <p className="small muted mb-0">None yet.</p> : (
+        <div className="table-responsive table-wrap">
+          <table className="table align-middle mb-0">
+            <thead><tr>{approved && <th>Priority</th>}<th>Cause or project</th><th>Match</th>{!approved && <th>Reason</th>}<th>Decided</th></tr></thead>
+            <tbody>
+              {rows.map((c) => (
+                <tr key={c.id}>
+                  {approved && <td className="num"><strong>{c.priority ?? '–'}</strong></td>}
+                  <td><strong>{c.needName}</strong><div className="small muted">{c.kind === 'CAUSE' ? 'School cause' : 'NGO project'} · {c.sector}</div></td>
+                  <td className="num">{c.score}%<div className="small muted">{matchLabel(c.score)}</div></td>
+                  {!approved && <td>{c.remark || <span className="muted">–</span>}</td>}
+                  <td className="small">{c.decidedAt ? when(c.decidedAt) : '–'}{c.decidedBy && <div className="muted">{c.decidedBy}</div>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+

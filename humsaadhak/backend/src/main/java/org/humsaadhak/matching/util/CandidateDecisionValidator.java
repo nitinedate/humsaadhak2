@@ -16,8 +16,19 @@ public final class CandidateDecisionValidator {
     private CandidateDecisionValidator() {}
 
     public static void validate(Set<Long> shownCandidateIds, List<Decision> decisions) {
+        validate(shownCandidateIds, Set.of(), decisions);
+    }
+
+    /**
+     * @param alreadyDecided this purpose's candidates approved or rejected earlier: a screen opened before that decision
+     *                       still offers them, and is told so (not that they belong to another purpose)
+     */
+    public static void validate(Set<Long> shownCandidateIds, Set<Long> alreadyDecided, List<Decision> decisions) {
         Set<Long> decided = new HashSet<>();
         for (Decision d : decisions) {
+            if (alreadyDecided.contains(d.candidateId()))
+                throw new DomainException("already-decided", "Candidate " + d.candidateId()
+                        + " was already approved or rejected. Reload the page to see what is still waiting for review.");
             if (!shownCandidateIds.contains(d.candidateId()))
                 throw new DomainException("unknown-candidate", "Candidate " + d.candidateId() + " does not belong to this purpose.");
             if (!decided.add(d.candidateId()))

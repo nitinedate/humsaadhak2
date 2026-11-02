@@ -11,7 +11,7 @@ import type {
   Counters, Drill, OpenNeed, OrganisationOption, ReportRequest,
   DocumentTypeAdminRow, SectorAdminRow,
   AdminUserRow, ApprovalRow, BankRow, CandidateDecision, CandidateRow, ContactRow, DashboardDto, DocRow, DocumentType, DonationResult,
-  DocumentListRow, ImportJob, MatchRow, Me, NeedView, Option, OrgSummary, PageResponse, PurposeView, ReviewRow, Role, ShareRow, StepRow,
+  DocumentListRow, ImportJob, SharedDocumentRow, MatchRow, Me, NeedView, Option, OrgSummary, PageResponse, PurposeView, ReviewRow, Role, ShareRow, StepRow,
 } from './types';
 
 const users: Record<string, Me> = {
@@ -205,6 +205,11 @@ const candidates: Record<number, CandidateRow[]> = {
     cand(3, 220, 'Tablet learning programme, classes 6–8', 'PROJECT', 84, true, 'classes, rural', 'Shared tablets with offline lessons in Marathi for 6 rural schools.', 380000),
     cand(4, 880, 'Computer lab refurbishment', 'CAUSE', 79, false, 'computer, lab', 'Replace 15 outdated computers and rewire the lab for classes 8 to 10.', 200000),
     cand(5, 221, 'Teacher training in ed-tech', 'PROJECT', 71, true, 'teacher, training', 'Six-month training for 40 government school teachers on digital lessons.', 180000),
+    // decided earlier: shown under Approved and Rejected, not offered for review again
+    { ...cand(8, 222, 'Coding club for girls, Satara', 'PROJECT', 90, true, 'computer, girls', 'Weekly coding sessions for 60 girls in classes 7 to 9.', 150000),
+      decision: 'APPROVED' as const, priority: 1, decidedBy: 'manager@demo.humsaadhak.org', decidedAt: '2026-10-08T10:15:00Z' },
+    { ...cand(9, 878, 'Drinking water station', 'CAUSE', 61, false, 'school', 'An RO purifier and storage tank for 300 children.', 260000),
+      decision: 'REJECTED' as const, remark: 'Outside this donor’s focus on digital learning.', decidedBy: 'manager@demo.humsaadhak.org', decidedAt: '2026-10-08T10:15:00Z' },
   ].map((c, i) => ({ ...c, engineRank: i + 1 })),
   305: [
     cand(6, 301, 'Meal top-up for 3 anganwadis', 'PROJECT', 93, true, 'anganwadi, children', 'Eggs, milk and millet snacks for 210 children, five days a week.', 300000),
@@ -473,12 +478,22 @@ async function demoRoute<T>(path: string, init: RequestInit & { json?: unknown }
     if (x) return ok(matchesByPurpose[Number(x[1])] ?? []);
     x = m(/^\/purposes\/(\d+)\/candidates$/);
     if (x) return ok((candidates[Number(x[1])] ?? []).filter((c) => c.decision === 'PENDING'));
+    x = m(/^\/purposes\/(\d+)\/candidates\/decided$/);
+    if (x) {
+      const list = candidates[Number(x[1])] ?? [];
+      return ok([...list.filter((c) => c.decision === 'APPROVED').sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99)),
+        ...list.filter((c) => c.decision === 'REJECTED')]);
+    }
     x = m(/^\/purposes\/(\d+)\/candidates\/decisions$/);
     if (x) {
       const decisions = (body.decisions ?? []) as CandidateDecision[];
       const list = candidates[Number(x[1])] ?? [];
       if (decisions.length !== list.filter((c) => c.decision === 'PENDING').length) fail(422, 'Decide every candidate before confirming.');
-      decisions.forEach((d) => { const c = list.find((v) => v.id === d.candidateId); if (c) c.decision = d.approve ? 'APPROVED' : 'REJECTED'; });
+      decisions.forEach((d) => {
+        const c = list.find((v) => v.id === d.candidateId);
+        if (c) Object.assign(c, { decision: d.approve ? 'APPROVED' : 'REJECTED', remark: d.remark ?? null, priority: d.priority ?? null,
+          decidedBy: demoUser?.email ?? 'manager@demo.humsaadhak.org', decidedAt: new Date().toISOString() });
+      });
       return ok({ id: 43 });
     }
     if (route === '/match-runs') return ok({ id: 42 });
@@ -538,6 +553,15 @@ async function demoRoute<T>(path: string, init: RequestInit & { json?: unknown }
       shares = [...shares, { id: ++nextId, needId, needName: n?.name ?? `Need ${needId}`, donorOrgId: me.orgId ?? 11, donorName: orgs[me.orgId ?? 11]?.name ?? 'Donor',
         ownerOrgId: owner, ownerName: orgs[owner]?.name ?? 'Organisation', status: 'REQUESTED' }];
       return ok({ id: nextId });
+    }
+    x = m(/^\/share-requests\/(\d+)\/documents$/);
+    if (x) {
+      const s = shares.find((v) => v.id === Number(x![1]));
+      if (!s) fail(404, 'Document request not found.');
+      if (s!.status !== 'APPROVED') return ok([]);
+      return ok(docs.filter((d) => d.state === 'REVIEWED' && documentTypes.find((t) => t.id === d.typeId)?.shareable)
+        .map((d): SharedDocumentRow => ({ id: d.id, typeName: documentTypes.find((t) => t.id === d.typeId)!.name, name: d.name,
+          version: d.version, approvedAt: '2026-10-02T10:30:00Z' })));
     }
     x = m(/^\/share-requests\/(\d+)\/(approve|reject)$/);
     if (x) { shares = shares.map((s) => (s.id === Number(x![1]) ? { ...s, status: x![2] === 'approve' ? 'APPROVED' : 'REJECTED' } : s)); return ok(undefined); }

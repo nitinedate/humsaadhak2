@@ -2,8 +2,6 @@ package org.humsaadhak.matching.service;
 
 import org.humsaadhak.matching.util.RerunPlan;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 import org.humsaadhak.matching.dto.SuggestedBenefactor;
 import org.humsaadhak.matching.dto.MatchRow;
 import org.humsaadhak.matching.dto.CandidateRow;
@@ -97,27 +95,21 @@ public class MatchingService implements Matches {
         return run.getId();
     }
 
+    /** Candidates still waiting for review: approved ones are confirmed matches, rejected ones training labels. */
     @Transactional(readOnly = true)
     public List<MatchCandidate> candidatesToReview(long purposeId) {
-        return candidates.findByPurposeIdAndFinalScoreGreaterThanEqualAndDecisionOrderByEngineRankAsc(
-                purposeId, showThreshold, MatchCandidate.Decision.PENDING);
+        return candidates.findByPurposeIdAndFinalScoreGreaterThanEqualOrderByEngineRankAsc(purposeId, showThreshold).stream()
+                .filter(c -> c.getDecision() == MatchCandidate.Decision.PENDING).toList();
     }
 
     /** All-or-nothing confirmation of a purpose's shown candidates. */
     @Transactional
     public long confirm(long purposeId, List<CandidateDecisionValidator.Decision> decisions, CurrentUser me) {
         var purpose = catalogue.purpose(purposeId).orElseThrow(() -> new NotFoundException("Purpose", purposeId));
-        List<MatchCandidate> allPurposeCandidates = candidates.lockPurposeCandidates(purposeId);
-        List<MatchCandidate> shown = allPurposeCandidates.stream()
-                .filter(c -> c.getFinalScore() >= showThreshold && c.getDecision() == MatchCandidate.Decision.PENDING).toList();
-        Set<Long> pendingIds = shown.stream().map(MatchCandidate::getId).collect(Collectors.toSet());
-        Set<Long> purposeCandidateIds = allPurposeCandidates.stream().map(MatchCandidate::getId).collect(Collectors.toSet());
-        boolean alreadyReviewed = decisions.stream().map(CandidateDecisionValidator.Decision::candidateId)
-                .anyMatch(id -> purposeCandidateIds.contains(id) && !pendingIds.contains(id));
-        if (alreadyReviewed)
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "One or more candidates have already been reviewed. The list has been refreshed; review the remaining candidates.");
-        CandidateDecisionValidator.validate(shown.stream().map(MatchCandidate::getId).collect(Collectors.toSet()), decisions);
+        List<MatchCandidate> shown = candidatesToReview(purposeId);
+        Set<Long> alreadyDecided = candidates.findByPurposeId(purposeId).stream()
+                .filter(c -> c.getDecision() != MatchCandidate.Decision.PENDING).map(MatchCandidate::getId).collect(Collectors.toSet());
+        CandidateDecisionValidator.validate(shown.stream().map(MatchCandidate::getId).collect(Collectors.toSet()), alreadyDecided, decisions);
 
         MatchBatch batch = batches.save(new MatchBatch(purposeId, me.id()));
         batch.setRefNo(RefNo.of(RefNo.MATCH_BATCH, batch.getId()));
@@ -179,11 +171,30 @@ public class MatchingService implements Matches {
     /** Candidates still to review for a purpose, with what the screens show about each cause or project. */
     @Transactional(readOnly = true)
     public List<CandidateRow> candidateRows(long purposeId) {
-        return candidatesToReview(purposeId).stream().map(c -> {
-            var n = catalogue.need(c.getNeedId()).orElseThrow();
-            return new CandidateRow(c.getId(), c.getNeedId(), n.name(), n.kind().name(), n.sector(), n.remaining(), c.getFinalScore(),
-                    c.getEngineRank(), c.getExplanationJson(), c.getDecision().name(), c.getRemark(), c.getPriority());
-        }).toList();
+        return candidatesToReview(purposeId).stream().map(this::row).toList();
+    }
+
+    /** A purpose's decided candidates: approved ones in the donor's priority order, then rejected ones, newest first. */
+    @Transactional(readOnly = true)
+    public List<CandidateRow> decidedRows(long purposeId) {
+        List<MatchCandidate> decided = candidates.findByPurposeId(purposeId).stream()
+                .filter(c -> c.getDecision() != MatchCandidate.Decision.PENDING).toList();
+        List<CandidateRow> rows = new ArrayList<>();
+        decided.stream().filter(c -> c.getDecision() == MatchCandidate.Decision.APPROVED)
+                .sorted(Comparator.comparing((MatchCandidate c) -> c.getPriority() == null ? Integer.MAX_VALUE : c.getPriority()))
+                .forEach(c -> rows.add(row(c)));
+        decided.stream().filter(c -> c.getDecision() == MatchCandidate.Decision.REJECTED)
+                .sorted(Comparator.comparing(MatchCandidate::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .forEach(c -> rows.add(row(c)));
+        return rows;
+    }
+
+    private CandidateRow row(MatchCandidate c) {
+        var n = catalogue.need(c.getNeedId()).orElseThrow();
+        boolean decided = c.getDecision() != MatchCandidate.Decision.PENDING;
+        return new CandidateRow(c.getId(), c.getNeedId(), n.name(), n.kind().name(), n.sector(), n.remaining(), c.getFinalScore(),
+                c.getEngineRank(), c.getExplanationJson(), c.getDecision().name(), c.getRemark(), c.getPriority(),
+                decided ? c.getUpdatedBy() : null, decided ? c.getUpdatedAt() : null);
     }
 
     /** Confirmed matches of a purpose in priority order; donors see only their own. */

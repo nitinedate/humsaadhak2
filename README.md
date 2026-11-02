@@ -36,8 +36,8 @@ Before go-live, rotate the previous project's credentials (DEPLOYMENT.md, Securi
 
 | Check | Result |
 |---|---|
-| Backend unit tests, compiled with javac 17 and run on Java 17, including architecture rules, TLS handshakes and deployment settings | 115 / 115 pass |
-| Frontend type-check and tests (every screen and role, exports, themes, roles, audit trail, responsive layout, adding staff, sign-in animations, page flips, compulsory documents, all documents for reviewers) | 104 / 104 pass |
+| Backend unit tests, compiled with javac 17 and run on Java 17, including architecture rules, TLS handshakes and deployment settings | 117 / 117 pass |
+| Frontend type-check and tests (every screen and role, exports, themes, roles, audit trail, responsive layout, adding staff, sign-in animations, page flips, compulsory documents, all documents for reviewers) | 107 / 107 pass |
 | Search service tests, including the Docker packaging rules | 36 / 36 pass |
 | Deployment script: shellcheck; local and production settings checked; up, backup, update, rollback, restore, dump-legacy and migrate-legacy dry-run | clean; behave as documented |
 | Production frontend build excludes demo data; `npm audit` | confirmed; 0 vulnerabilities |

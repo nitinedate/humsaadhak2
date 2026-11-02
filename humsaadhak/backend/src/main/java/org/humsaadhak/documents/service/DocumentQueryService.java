@@ -1,5 +1,10 @@
 package org.humsaadhak.documents.service;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.humsaadhak.shared.exception.NotFoundException;
+import org.humsaadhak.documents.entity.ShareRequest;
+import org.humsaadhak.documents.entity.DocumentType;
+import org.humsaadhak.documents.dto.SharedDocumentRow;
 import org.humsaadhak.shared.exception.DomainException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.Sort;
@@ -100,6 +105,26 @@ public class DocumentQueryService {
         types.findAll().forEach(t -> typeNames.put(t.getId(), t.getName()));
         return pending.stream().map(d -> new ReviewRow(d.getId(), d.getOwnerOrgId(), orgNames.getOrDefault(d.getOwnerOrgId(), "Organisation " + d.getOwnerOrgId()),
                 d.getDocumentTypeId(), typeNames.getOrDefault(d.getDocumentTypeId(), "Document"), d.getOriginalName(), d.getDocVersion(), d.getCreatedBy())).toList();
+    }
+
+    /**
+     * The documents a school or NGO shares with a donor through an approved request: the current version of each
+     * shareable document, once HumSaadhak has approved it (exactly what DocumentAccessPolicy lets the donor download).
+     * For the donor who asked, the owner, or staff; empty while the request is not approved.
+     */
+    public List<SharedDocumentRow> sharedDocuments(long shareRequestId, CurrentUser me) {
+        ShareRequest s = shares.findById(shareRequestId).orElseThrow(() -> new NotFoundException("Document request", shareRequestId));
+        boolean allowed = me.role().isStaff() || (me.orgId() != null && (me.orgId() == s.getDonorOrgId() || me.orgId() == s.getOwnerOrgId()));
+        if (!allowed) throw new AccessDeniedException("document request " + shareRequestId);
+        if (s.getStatus() != ShareRequest.Status.APPROVED) return List.of();
+        Map<Long, DocumentType> shareable = new HashMap<>();
+        types.findAll().forEach(t -> { if (t.isShareable()) shareable.put(t.getId(), t); });
+        return documents.findByOwnerOrgIdAndSupersededFalseOrderByIdDesc(s.getOwnerOrgId()).stream()
+                .filter(d -> d.getState() == Document.State.REVIEWED && shareable.containsKey(d.getDocumentTypeId()))
+                .map(d -> new SharedDocumentRow(d.getId(), shareable.get(d.getDocumentTypeId()).getName(), d.getOriginalName(),
+                        d.getDocVersion(), d.getUpdatedAt()))
+                .sorted(java.util.Comparator.comparing(SharedDocumentRow::typeName))
+                .toList();
     }
 
     /** Requests a donor made, or requests a school or NGO received. */

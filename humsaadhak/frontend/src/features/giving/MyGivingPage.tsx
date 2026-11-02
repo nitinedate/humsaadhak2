@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api, ApiError } from '../../shared/api/client';
 import type { MatchRow, PurposeView, ShareRow } from '../../shared/api/types';
 import { inr, PERIODICITY_LABEL } from '../../shared/format';
 import { ErrorNote, Skeleton } from '../../shared/ui/States';
+import { SharedDocuments } from '../documents/SharedDocuments';
 import { ActivityPanel } from '../../shared/ui/AuditTrail';
 
 /** The donor's home for action: each purpose with its confirmed matches, document requests and a way to give. */
@@ -16,6 +17,7 @@ export default function MyGivingPage() {
     queries: approved.map((p) => ({ queryKey: ['matches', p.id], queryFn: () => api<MatchRow[]>(`/purposes/${p.id}/matches`) })),
   });
   const shares = useQuery({ queryKey: ['share-requests'], queryFn: () => api<ShareRow[]>('/share-requests') });
+  const [openShare, setOpenShare] = useState<number | null>(null);   // the match whose shared documents are open
   const [notice, setNotice] = useState<string | null>(null);
 
   const request = useMutation({
@@ -59,20 +61,29 @@ export default function MyGivingPage() {
                   <tbody>
                     {q.data.map((m) => {
                       const share = shareFor(m.needId);
+                      const shared = share?.status === 'APPROVED';
                       return (
-                        <tr key={m.id}>
+                        <Fragment key={m.id}>
+                        <tr>
                           <td className="num"><strong>{m.priority}</strong></td>
                           <td><strong>{m.needName}</strong><div className="small muted">{m.refNo} · {m.kind === 'CAUSE' ? 'School cause' : 'NGO project'}</div></td>
                           <td className="num">{inr(m.remaining)}</td>
                           <td>
-                            {share ? <span className={`pill ${share.status === 'APPROVED' ? 'approved' : share.status === 'REJECTED' ? 'rejected' : 'pending'}`}>
-                                       {share.status === 'APPROVED' ? 'Shared with you' : share.status === 'REJECTED' ? 'Declined' : 'Requested'}</span>
+                            {shared ? <button type="button" className="btn btn-outline-success btn-sm" aria-expanded={openShare === m.id}
+                                              onClick={() => setOpenShare(openShare === m.id ? null : m.id)}>
+                                        {openShare === m.id ? 'Hide documents' : 'View shared documents'}</button>
+                             : share ? <span className={`pill ${share.status === 'REJECTED' ? 'rejected' : 'pending'}`}>
+                                       {share.status === 'REJECTED' ? 'Declined' : 'Requested'}</span>
                                    : <button type="button" className="btn btn-outline-secondary btn-sm" disabled={request.isPending} onClick={() => request.mutate(m.needId)}>Request documents</button>}
                           </td>
                           <td style={{ textAlign: 'right' }}>
                             {m.remaining > 0 ? <Link className="btn btn-primary btn-sm" to={`/donate?needId=${m.needId}&matchId=${m.id}`}>Give</Link> : <span className="pill success">Fully funded</span>}
                           </td>
                         </tr>
+                        {shared && openShare === m.id && (
+                          <tr className="shared-docs-row"><td colSpan={5}><SharedDocuments requestId={share!.id} ownerName={share!.ownerName} /></td></tr>
+                        )}
+                        </Fragment>
                       );
                     })}
                   </tbody>

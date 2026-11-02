@@ -111,6 +111,11 @@ h2.card-title { margin: 0; font-size: 16px; font-weight: 700; }
 /* The upload form's compulsory documents: listed first and starred in the dropdown (bold and coloured where the browser
    styles options), and a checklist of pills under it; a pill chooses its document */
 .form-select option.opt-compulsory { font-weight: 700; color: var(--accent-ink); background-color: var(--accent-soft); }
+/* Documents an organisation shares with a donor (My giving, Document requests) */
+.shared-docs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.shared-docs li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px;
+                  border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.shared-docs-row > td { background: var(--line-soft); }
 /* Filter forms and pagers under lists (the documents list; the same layout as the audit log's) */
 .filter-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-items: end; }
 .filter-actions { display: flex; gap: 8px; }
